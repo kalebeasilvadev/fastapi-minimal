@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: kalebeasilvadev/fastapi-minimal:latest  # ou sua própria imagem
+        image: ghcr.io/kalebeasilvadev/fastapi-minimal:latest  # ou sua própria imagem
         ports:
         - containerPort: 8000
 ---
