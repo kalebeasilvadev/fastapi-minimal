@@ -1,19 +1,35 @@
-name: Deploy FastAPI para o cluster local
+name: Build e Deploy FastAPI com GHCR
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: [self-hosted, linux]
+
     steps:
-      - name: Checkout
+      - name: Checkout do repositório
         uses: actions/checkout@v3
 
-      - name: Verificar kubectl
-        run: kubectl version --client
+      - name: Instalar kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
 
-      - name: Aplicar YAML do FastAPI
-        run: kubectl apply -f k8s/fastapi.yaml
+      - name: Login no GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+
+      - name: Build da imagem
+        run: |
+          docker build -t ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest .
+
+      - name: Push para GHCR
+        run: |
+          docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest
+
+      - name: Aplicar ou atualizar deploy no cluster
+        run: |
+          kubectl set image deployment/fastapi-app fastapi=ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest --record || \
+          kubectl apply -f k8s/fastapi.yaml
