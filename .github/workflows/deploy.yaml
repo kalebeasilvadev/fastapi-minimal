@@ -1,27 +1,22 @@
-name: Build and Deploy FastAPI with Kaniko
+name: Build and Push Docker Image
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  docker-build:
+    runs-on: self-hosted
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      - name: Build and push Docker image with Kaniko
-        uses: addnab/docker-run-action@v3
-        with:
-          image: gcr.io/kaniko-project/executor:latest
-          options: >
-            -v ${{ github.workspace }}:/workspace
-          run: |
-            /kaniko/executor \
-              --context /workspace \
-              --dockerfile /workspace/Dockerfile \
-              --destination ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest \
-              --skip-tls-verify \
-              --verbosity debug
+      - name: Login no GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+
+      - name: Build da imagem
+        run: docker build -t ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest .
+
+      - name: Push da imagem
+        run: docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest
