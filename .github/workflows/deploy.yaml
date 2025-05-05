@@ -6,10 +6,10 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
       image: gcr.io/kaniko-project/executor:latest
-      options: --entrypoint="" # remove o entrypoint default
+      options: --entrypoint=""
     steps:
       - uses: actions/checkout@v3
 
@@ -19,7 +19,5 @@ jobs:
             --context . \
             --dockerfile Dockerfile \
             --destination ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest \
-            --insecure \
             --skip-tls-verify \
-            --verbosity debug \
-            --log-timestamp
+            --verbosity info
