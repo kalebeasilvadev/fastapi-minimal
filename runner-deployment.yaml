@@ -25,13 +25,13 @@ spec:
             - name: REPO_URL
               valueFrom:
                 secretKeyRef:
-                  key: REPO_URL
                   name: github-runner
+                  key: REPO_URL
             - name: RUNNER_TOKEN
               valueFrom:
                 secretKeyRef:
-                  key: RUNNER_TOKEN
                   name: github-runner
+                  key: RUNNER_TOKEN
             - name: RUNNER_NAME
               value: k8s-dind-runner
             - name: RUNNER_GROUP
@@ -41,12 +41,14 @@ spec:
             - name: ORG_RUNNER
               value: 'false'
           volumeMounts:
-            - mountPath: /runner/_work
-              name: work
-            - mountPath: /var/run
-              name: docker-sock
+            - name: work
+              mountPath: /runner/_work
+            - name: docker-sock
+              mountPath: /var/run/docker.sock
       volumes:
         - name: work
           emptyDir: {}
         - name: docker-sock
-          emptyDir: {}
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
