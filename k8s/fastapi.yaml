@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fastapi-app
-  labels:
-    app: fastapi
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -15,15 +14,16 @@ spec:
         app: fastapi
     spec:
       containers:
-      - name: fastapi
-        image: ghcr.io/kalebeasilvadev/fastapi-minimal:latest  # ou sua própria imagem
-        ports:
-        - containerPort: 8000
+        - name: fastapi
+          image: ghcr.io/kalebeasilvadev/fastapi-minimal:latest
+          ports:
+            - containerPort: 8000
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: fastapi-service
+  namespace: default
 spec:
   selector:
     app: fastapi
@@ -31,4 +31,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8000
-  type: NodePort  # ou LoadBalancer se usar MetalLB ou Ingress
+  type: NodePort

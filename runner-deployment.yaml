@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-runner
+  namespace: github-runner
+  labels:
+    app: github-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-runner
+  template:
+    metadata:
+      labels:
+        app: github-runner
+    spec:
+      containers:
+        - name: runner
+          image: myoung34/github-runner:ubuntu-dind
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          env:
+            - name: REPO_URL
+              valueFrom:
+                secretKeyRef:
+                  key: REPO_URL
+                  name: github-runner
+            - name: RUNNER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: RUNNER_TOKEN
+                  name: github-runner
+            - name: RUNNER_NAME
+              value: k8s-dind-runner
+            - name: RUNNER_GROUP
+              value: default
+            - name: RUNNER_WORKDIR
+              value: _work
+            - name: ORG_RUNNER
+              value: 'false'
+          volumeMounts:
+            - mountPath: /runner/_work
+              name: work
+      volumes:
+        - name: work
+          emptyDir: {}
