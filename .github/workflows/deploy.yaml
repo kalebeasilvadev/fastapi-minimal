@@ -1,23 +1,28 @@
-name: Build and Deploy FastAPI
+name: Build and Deploy FastAPI with Kaniko
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    container:
-      image: gcr.io/kaniko-project/executor:latest
-      options: --entrypoint=""
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout código
+        uses: actions/checkout@v3
 
       - name: Build and push Docker image with Kaniko
-        run: |
-          /kaniko/executor \
-            --context . \
-            --dockerfile Dockerfile \
-            --destination ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest \
-            --skip-tls-verify \
-            --verbosity info
+        uses: addnab/docker-run-action@v3
+        with:
+          image: gcr.io/kaniko-project/executor:latest
+          options: >
+            -v ${{ github.workspace }}:/workspace
+            -v /kaniko/.docker
+          run: |
+            /kaniko/executor \
+              --context /workspace \
+              --dockerfile /workspace/Dockerfile \
+              --destination ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest \
+              --skip-tls-verify \
+              --verbosity debug
