@@ -43,6 +43,10 @@ spec:
           volumeMounts:
             - mountPath: /runner/_work
               name: work
+            - mountPath: /var/run
+              name: docker-sock
       volumes:
         - name: work
+          emptyDir: {}
+        - name: docker-sock
           emptyDir: {}
