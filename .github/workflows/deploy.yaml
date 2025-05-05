@@ -7,18 +7,19 @@ on:
 jobs:
   build-and-deploy:
     runs-on: self-hosted
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      options: --entrypoint="" # remove o entrypoint default
     steps:
       - uses: actions/checkout@v3
 
-      - name: Login to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
-
-      - name: Build and push Docker image
+      - name: Build and push Docker image with Kaniko
         run: |
-          docker build -t ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest .
-          docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest
-
-      - name: Set image on Kubernetes
-        run: |
-          kubectl set image deployment/fastapi-app fastapi=ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest --record || \
-          kubectl apply -f k8s/fastapi.yaml
+          /kaniko/executor \
+            --context . \
+            --dockerfile Dockerfile \
+            --destination ghcr.io/${{ secrets.GHCR_USERNAME }}/fastapi-minimal:latest \
+            --insecure \
+            --skip-tls-verify \
+            --verbosity debug \
+            --log-timestamp
