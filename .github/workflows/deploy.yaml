@@ -16,9 +16,9 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: gcr.io/kaniko-project/executor:latest
+          shell: 'none'
           options: >
             -v ${{ github.workspace }}:/workspace
-            -v /kaniko/.docker
           run: |
             /kaniko/executor \
               --context /workspace \
